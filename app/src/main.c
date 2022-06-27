@@ -1,6 +1,6 @@
 #include <zephyr/zephyr.h>
 #include "stdbool.h"
-#include "main.h"
+#include "scheduler.h"
 
 #define MY_STACK_SIZE 4096
 #define TRIGGER_TIME_MS	1000
@@ -32,15 +32,24 @@ void runnable_2x(void *a, void *b, void *c)
 static k_tid_t tid_4x;
 struct k_thread runnable_4x_thread;
 K_THREAD_STACK_DEFINE(t4x_stack, MY_STACK_SIZE);
-
-
 void runnable_4x(void *a, void *b, void *c)
 {
 	BEGIN_RUNNABLE
-
-	printk("4x\n");
-	
+		printk("4x\n");	
+		while(1){}
 	END_RUNNABLE
+}
+
+void thread_wakeup(k_tid_t thread)
+{
+	if (is_thread_finished(thread) )
+	{
+		k_wakeup(thread);
+	}
+	else
+	{
+		printk("Thread Overrun!!!!");
+	}
 }
 
 void init_runnables(void) 
@@ -58,11 +67,6 @@ tid_4x = k_thread_create(&runnable_4x_thread, t4x_stack,
 					NULL, NULL, NULL,RUNNABLE_4X_PRIORITY, 0, K_FOREVER);
 }
 
-void thread_wakeup(k_tid_t thread)
-{
-	//if k_threas
-}
-
 
 static unsigned char timer_cnt = 0;
 static bool timer_first = true;
@@ -72,14 +76,14 @@ void timer_fn(struct k_timer *dummy)
 	printk("Timer Trigger!\n");
 	
 	if(false == timer_first) {
-		k_wakeup(tid_1x);
+		thread_wakeup(tid_1x);
 		if( 0 == (timer_cnt & 0x01) ) // 2x 
 		{
-			k_wakeup(tid_2x);
+			thread_wakeup(tid_2x);
 		}
 		if ( 0 == (timer_cnt & 0x03) ) // 4x 
 		{
-			k_wakeup(tid_4x);
+			thread_wakeup(tid_4x);
 		}
 	}
 	else
