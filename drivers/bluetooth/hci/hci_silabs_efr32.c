@@ -51,6 +51,7 @@ static atomic_t sli_btctrl_events;
 static struct k_fifo slz_rx_fifo;
 
 /* FIXME: these functions should come from the SiSDK headers! */
+int16_t* slz_tx_power_external = NULL;
 void BTLE_LL_EventRaise(uint32_t events);
 void BTLE_LL_Process(uint32_t events);
 int16_t BTLE_LL_SetMaxPower(int16_t power);
@@ -246,6 +247,7 @@ static int slz_bt_open(const struct device *dev, bt_hci_recv_t recv)
 	struct hci_data *hci = dev->data;
 	int ret;
 	sl_status_t sl_status;
+	int16_t tx_pwr;
 
 	BUILD_ASSERT(CONFIG_NUM_METAIRQ_PRIORITIES > 0,
 		     "Config NUM_METAIRQ_PRIORITIES must be greater than 0");
@@ -274,7 +276,13 @@ static int slz_bt_open(const struct device *dev, bt_hci_recv_t recv)
 		goto deinit;
 	}
 
-	slz_set_tx_power(CONFIG_BT_CTLR_TX_PWR_ANTENNA);
+	if (slz_tx_power_external != NULL) {
+		tx_pwr = *slz_tx_power_external;
+	} else {
+		tx_pwr = CONFIG_BT_CTLR_TX_PWR_ANTENNA;
+	}
+
+	slz_set_tx_power(tx_pwr);
 
 	if (IS_ENABLED(CONFIG_PM)) {
 		RAIL_ConfigSleep(sli_btctrl_get_radio_context_handle(),
