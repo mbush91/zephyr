@@ -21,6 +21,8 @@ manifest:
   remotes:
     - name: upstream
       url-base: https://github.com/zephyrproject-rtos
+    - name: mbush91-fork
+      url-base: https://github.com/mbush91
     - name: babblesim
       url-base: https://github.com/BabbleSim
 
@@ -321,7 +323,8 @@ manifest:
       groups:
         - crypto
     - name: mcuboot
-      revision: 96576b341ee19f1c3af6622256b0d4f3d408e1e3
+      remote: mbush91-fork
+      revision: em4-wake
       path: bootloader/mcuboot
       groups:
         - bootloader
